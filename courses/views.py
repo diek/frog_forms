@@ -15,9 +15,9 @@ def course_detail(request, pk):
     steps = sorted(chain(course.text_set.all(), course.quiz_set.all()),
                    key=lambda step: step.order)
     return render(request, 'courses/course_detail.html', {
-            'course': course,
-            'steps': steps
-        })
+                           'course': course,
+                           'steps': steps
+    })
 
 
 def text_detail(request, course_pk, step_pk):
