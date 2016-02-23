@@ -52,15 +52,9 @@ def quiz_create(request, course_pk):
     return render(request, 'courses/quiz_form.html', {'form': form, 'course': course})
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+@login_required
+def quiz_edit(request, course_pk, quiz_pk):
+    quiz = get_object_or_404(models.Quiz, pk=quiz_pk, course_id=course_pk)
+    form = forms.QuizForm(instance=quiz)
+    # work back
+    return render(request, 'course/quiz_form.html', {'form': form, 'course': quiz.course})

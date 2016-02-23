@@ -14,5 +14,11 @@
             <h1>{{ step.title }}</h1>
             Quiz questions here
         </article>
+        {% if user.is_authenicated %}
+        <hr>
+        <a href="{% url 'courses:edit_quiz' course_pk=step.course.pk quiz_pk=step.pk %}"
+        class="button">Edit</a>
+        {% endif %}
+
     </div>
 {% endblock %}
