@@ -11,14 +11,26 @@
     <div class="row columns">
         <article>
             {{ block.super }}
-            <h1>{{ step.title }}</h1>
-            Quiz questions here
+            <h2>{{ step.title }}</h2>
+            <ul class="no-bullet">
+                {% for question in step.question_set.all %}
+                <li>
+                    <h2>{{ question.prompt }}</h2>
+                    {% for answer in question.answer_set.all %}
+                        <div class="callout">{{ answer.text }}</div>
+                    {% endfor %}
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'courses:edit_question' question_pk=question.pk quiz_pk=step.pk %}" class="button">Edit</a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
         </article>
-        {% if user.is_authenicated %}
+        {% if user.is_authenticated %}
         <hr>
-        <a href="{% url 'courses:edit_quiz' course_pk=step.course.pk quiz_pk=step.pk %}"
-        class="button">Edit</a>
+        <a href="{% url 'courses:edit_quiz' course_pk=step.course.pk quiz_pk=step.pk %}" class="button">Edit</a>
+        <a href="{% url 'courses:create_question' quiz_pk=step.pk question_type="mc" %}" class="button">New Multiple Choice</a>
+        <a href="{% url 'courses:create_question' quiz_pk=step.pk question_type="tf" %}" class="button">New True/False</a>
         {% endif %}
-
     </div>
 {% endblock %}

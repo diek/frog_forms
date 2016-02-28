@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
-from . import models
 from . import forms
+from . import models
 
 
 def course_list(request):
@@ -46,8 +46,7 @@ def quiz_create(request, course_pk):
             quiz = form.save(commit=False)
             quiz.course = course
             quiz.save()
-            messages.add_message(request, messages.SUCCESS,
-                                 "Quiz added successfully.")
+            messages.add_message(request, messages.SUCCESS, "Quiz added successfully.")
         return HttpResponseRedirect(quiz.get_absolute_url())
     return render(request, 'courses/quiz_form.html', {'form': form, 'course': course})
 
@@ -56,5 +55,68 @@ def quiz_create(request, course_pk):
 def quiz_edit(request, course_pk, quiz_pk):
     quiz = get_object_or_404(models.Quiz, pk=quiz_pk, course_id=course_pk)
     form = forms.QuizForm(instance=quiz)
-    # work back
-    return render(request, 'course/quiz_form.html', {'form': form, 'course': quiz.course})
+    if request.method == 'POST':
+        form = forms.QuizForm(instance=quiz, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Updated {}'.format(form.cleaned_data['title']))
+            return HttpResponseRedirect(quiz.get_absolute_url())
+    return render(request, 'courses/quiz_form.html', {'form': form, 'course': quiz.course})
+
+
+@login_required
+def create_question(request, quiz_pk, question_type):
+    quiz = get_object_or_404(models.Quiz, pk=quiz_pk)
+    if question_type == 'tf':
+        form_class = forms.TrueFalseQuestionForm
+    else:
+        form_class = forms.MultipleChoiceQuestionForm
+
+    form = form_class()
+
+    if request.method == 'POST':
+        form = form_class(request.POST)
+        if form.is_valid():
+            question = form.save(commit=False)
+            question.quiz = quiz
+            question.save()
+            messages.success(request, "Added question")
+            return HttpResponseRedirect(quiz.get_absolute_url())
+    return render(request, 'courses/question_form.html', {
+        'quiz': quiz,
+        'form': form
+    })
+
+
+@login_required
+def edit_question(request, quiz_pk, question_pk):
+    question = get_object_or_404(models.Question,
+                                 pk=question_pk, quiz_id=quiz_pk)
+    if hasattr(question, 'truefalsequestion'):
+        form_class = forms.TrueFalseQuestionForm
+        question = question.truefalsequestion
+    else:
+        form_class = forms.MultipleChoiceQuestionForm
+        question = question.truefalsequestion
+
+    form = form_class(instance=question)
+
+    if request.method == 'POST':
+        form = form_class(request.POST, instance=question)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Updated question')
+            return HttpResponseRedirect(question.quiz.get_absolute_url())
+    return render(request, 'course/question_form.html', {'form': form})
+
+
+# So if request.method is equal to POST, then form = form_class and let's, just to show that this works both ways,
+# we'll do request.POST and the instance equals the question.
+# If you're doing this professionally, even if you're just doing this for
+# yourself, you want to be consistent.
+# You don't wanna flip flop between these different methods.
+# I'm doing this as multiple different ways so you can see all the ways that work.
+# But in the real world, for your actual job, or for stuff you're building to try
+# and get a job, or for stuff you just wanna build for yourself, be consistent.
+# If you're gonna do request.post instance equals, always do that.
+# Don't flip back and forth between instant sequels, data equals, and request op post instance equals.
