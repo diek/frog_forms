@@ -110,6 +110,44 @@ def edit_question(request, quiz_pk, question_pk):
     return render(request, 'course/question_form.html', {'form': form})
 
 
+# @login_required
+# def answer_form(request, question_pk, answer_pk=None):
+#     question = get_object_or_404(models.Question, pk=question_pk)
+
+#     form = forms.AnswerForm()
+
+#     if request.method == 'POST':
+#         # Get the form data
+#         form = forms.AnswerForm(request.POST)
+#         if form.is_valid():
+#             answer = form.save(commit=False)
+#             answer.question = answer
+#             answer.save()
+#             messages.success(request, 'Answer added')
+#             return HttpResponseRedirect(question.get_absolute_url)
+#     return render(request, 'courses/answer_form.html', {
+#                            'question': question,
+#                            'form': form
+#     })
+
+@login_required
+def answer_form(request, question_pk):
+    question = get_object_or_404(models.Question, pk=question_pk)
+
+    form = forms.AnswerForm()
+
+    if request.method == 'POST':
+        form = forms.AnswerForm(request.POST)
+        if form.is_valid():
+            answer = form.save(commit=False)
+            answer.question = question
+            answer.save()
+            messages.success(request, "Answer added")
+            return HttpResponseRedirect(question.get_absolute_url())
+    return render(request, "courses/answer_form.html", {
+        'question': question,
+        'form': form
+    })
 # So if request.method is equal to POST, then form = form_class and let's, just to show that this works both ways,
 # we'll do request.POST and the instance equals the question.
 # If you're doing this professionally, even if you're just doing this for
