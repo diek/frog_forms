@@ -97,7 +97,7 @@ def edit_question(request, quiz_pk, question_pk):
         question = question.truefalsequestion
     else:
         form_class = forms.MultipleChoiceQuestionForm
-        question = question.truefalsequestion
+        question = question.multiplechoicequestion
 
     form = form_class(instance=question)
 
@@ -107,28 +107,11 @@ def edit_question(request, quiz_pk, question_pk):
             form.save()
             messages.success(request, 'Updated question')
             return HttpResponseRedirect(question.quiz.get_absolute_url())
-    return render(request, 'course/question_form.html', {'form': form})
+    return render(request, 'courses/question_form.html', {
+        'form': form,
+        'quiz': question.quiz
+    })
 
-
-# @login_required
-# def answer_form(request, question_pk, answer_pk=None):
-#     question = get_object_or_404(models.Question, pk=question_pk)
-
-#     form = forms.AnswerForm()
-
-#     if request.method == 'POST':
-#         # Get the form data
-#         form = forms.AnswerForm(request.POST)
-#         if form.is_valid():
-#             answer = form.save(commit=False)
-#             answer.question = answer
-#             answer.save()
-#             messages.success(request, 'Answer added')
-#             return HttpResponseRedirect(question.get_absolute_url)
-#     return render(request, 'courses/answer_form.html', {
-#                            'question': question,
-#                            'form': form
-#     })
 
 @login_required
 def answer_form(request, question_pk):
